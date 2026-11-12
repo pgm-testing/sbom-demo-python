@@ -1,0 +1,30 @@
+name: Verify processed Atlas submission
+on:
+  workflow_dispatch:
+    inputs:
+      submission_id:
+        description: "Submission ID recorded by the baseline workflow"
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: "0.9.22"
+          python-version: "3.12"
+      - name: Verify recorded submission and dependency relationships
+        env:
+          SUBMISSION_ID: ${{ inputs.submission_id }}
+        run: uv run --frozen python check.py atlas --submission-id "$SUBMISSION_ID"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: atlas-verification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/
+          retention-days: 30

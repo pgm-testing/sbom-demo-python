@@ -1,0 +1,55 @@
+name: Python SBOM baseline
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: "0.9.22"
+          python-version: "3.12"
+      - name: Validate the assertions
+        run: uv run --frozen python -m unittest -v
+      - name: Resolve and exercise pinned dependencies
+        run: uv run --frozen python smoke.py
+      - name: Fetch and submit with unchanged PG Atlas Action
+        id: atlas
+        uses: SCF-Public-Goods-Maintenance/pg-atlas-sbom-action@ed68e4cc4c42a25a88a12f8ac26f520986851ec5
+      - name: Check expected SBOM dependencies
+        if: always() && steps.atlas.outputs.sbom-path != ''
+        run: uv run --frozen python check.py sbom
+      - name: Locate exact submission
+        id: submission
+        if: always() && steps.atlas.outcome == 'success'
+        run: uv run --frozen python check.py submission
+      - name: Check Atlas relationships
+        if: always() && steps.submission.outputs.submission_id != ''
+        run: uv run --frozen python check.py atlas --submission-id "${{ steps.submission.outputs.submission_id }}"
+      - name: Record run references
+        if: always()
+        env:
+          COMMIT: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          mkdir -p evidence
+          python -c 'import json,os; from pathlib import Path; Path("evidence/run.json").write_text(json.dumps({k:os.environ[k] for k in ["COMMIT","REPOSITORY","RUN_ID"]},indent=2))'
+          cp expected.json evidence/expected.json
+      - name: Preserve baseline evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: python-baseline-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 30
+          path: |
+            evidence/
+            sbom.spdx.json
+            response.json

@@ -1,0 +1,30 @@
+{
+  "repository": "pgm-testing/d1-python",
+  "action_revision": "ed68e4cc4c42a25a88a12f8ac26f520986851ec5",
+  "probes": [
+    {
+      "name": "Python Stellar SDK",
+      "purl": "pkg:pypi/stellar-sdk",
+      "version": "17.0.1",
+      "repo": "pkg:github/StellarCN/py-stellar-base"
+    },
+    {
+      "name": "Java Stellar SDK Python bindings",
+      "purl": "pkg:pypi/stellar-contract-bindings",
+      "version": "0.6.0b0",
+      "repo": "pkg:github/lightsail-network/stellar-contract-bindings"
+    },
+    {
+      "name": "Hardware Wallet Support",
+      "purl": "pkg:pypi/strledger",
+      "version": "0.11.0",
+      "repo": "pkg:github/lightsail-network/strledger"
+    },
+    {
+      "name": "requests control",
+      "purl": "pkg:pypi/requests",
+      "version": "2.34.2",
+      "repo": null
+    }
+  ]
+}

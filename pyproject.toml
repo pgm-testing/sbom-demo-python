@@ -1,0 +1,11 @@
+[project]
+name = "pg-atlas-d1-python-demo"
+version = "0.0.0"
+description = "D1 Python dependency coverage baseline; not a published package"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "stellar-sdk==17.0.1",
+  "stellar-contract-bindings==0.6.0b0",
+  "strledger==0.11.0",
+  "requests==2.34.2",
+]
