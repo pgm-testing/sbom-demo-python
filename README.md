@@ -43,3 +43,7 @@ Artifacts are retained for 30 days. Download important baseline evidence into th
 ## Review
 
 Report actual baseline results, including missing dependencies and delays, before changing workflows to address coverage. Gradle/Swift fixes and other Phase 2 work are tracked in [the D1 plan](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sbom-action/issues/10).
+
+## Repository rename
+
+This demo was renamed from `pgm-testing/d1-python` to `pgm-testing/sbom-demo-python`. Submission 2399 and the initial baseline belong to the old repository identity. Preserve that historical evidence; use a new baseline submission for the renamed repository. The verifier intentionally rejects submissions owned by a different repository name.

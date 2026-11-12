@@ -6,12 +6,12 @@ from check import assert_sbom, atlas_result
 
 class CoverageTests(unittest.TestCase):
     def setUp(self):
-        self.expected = {"repository": "pgm-testing/d1-python", "probes": [
+        self.expected = {"repository": "pgm-testing/sbom-demo-python", "probes": [
             {"name": "probe", "purl": "pkg:pypi/stellar-sdk", "version": "17.0.1",
              "repo": "pkg:github/StellarCN/py-stellar-base"}]}
         self.doc = {"packages": [
             {"SPDXID": "root", "externalRefs": [{"referenceType": "purl",
-              "referenceLocator": "pkg:github/pgm-testing/d1-python"}]},
+              "referenceLocator": "pkg:github/pgm-testing/sbom-demo-python"}]},
             {"SPDXID": "dep", "versionInfo": "17.0.1", "externalRefs": [
              {"referenceType": "purl", "referenceLocator": "pkg:pypi/stellar-sdk@17.0.1"}]}],
             "relationships": [{"spdxElementId": "root", "relationshipType": "DEPENDS_ON",
@@ -40,7 +40,7 @@ class CoverageTests(unittest.TestCase):
         self.assertTrue(assert_sbom(self.doc, self.expected)["pass"])
 
     def test_pending_is_not_coverage_failure(self):
-        result, code = atlas_result({"id": 1, "repository_claim": "pgm-testing/d1-python",
+        result, code = atlas_result({"id": 1, "repository_claim": "pgm-testing/sbom-demo-python",
                                      "status": "pending"}, self.expected)
         self.assertEqual(code, 3)
         self.assertEqual(result["status"], "pending")
@@ -52,14 +52,14 @@ class CoverageTests(unittest.TestCase):
     @patch("check.get")
     def test_processed_missing_edge_fails(self, fetch):
         fetch.side_effect = [{"project_id": None}, []]
-        self.assertEqual(atlas_result({"id": 1, "repository_claim": "pgm-testing/d1-python",
+        self.assertEqual(atlas_result({"id": 1, "repository_claim": "pgm-testing/sbom-demo-python",
                          "status": "processed"}, self.expected)[1], 1)
 
     @patch("check.get")
     def test_processed_expected_edge_passes(self, fetch):
         fetch.side_effect = [{"project_id": None},
             [{"canonical_id": "pkg:github/StellarCN/py-stellar-base"}]]
-        self.assertEqual(atlas_result({"id": 1, "repository_claim": "pgm-testing/d1-python",
+        self.assertEqual(atlas_result({"id": 1, "repository_claim": "pgm-testing/sbom-demo-python",
                          "status": "processed"}, self.expected)[1], 0)
 
 
