@@ -31,9 +31,9 @@ An SBOM check requires the exact package versions and a dependency path from the
 
 Push to main or manually run **Python SBOM baseline**. Enable GitHub's dependency graph for this repository first. The workflow uses read access and OIDC to submit to https://api.pgatlas.xyz, with the tested Action pinned in the workflow and expected.json.
 
-The workflow records the exported SBOM, checks all five dependencies, locates the submission by matching its stored artifact to the exported document, and checks processed Atlas repository relationships for the four Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
+The workflow records the exported SBOM, checks all five dependencies, locates the submission by matching Atlas’s semantic content hash, and checks processed Atlas repository relationships for the four Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
 
-The current Action does not expose a submission ID. The correlation check searches up to 50 recent submissions for this repository and requires matching parsed artifact content; an unmatched or missing artifact is not treated as success.
+The current Action does not expose a submission ID. The correlation check searches up to 50 recent submissions for this repository and matches the semantic hash of the document name, sorted packages and sorted relationships. It ignores volatile export metadata, as Atlas does, so deduplicated submissions can still be identified. An unmatched hash is not treated as success.
 
 Atlas processing can take hours. The baseline checks once after locating the submission. A `pending` result exits with code 3 and is distinct from missing dependency coverage (code 1) or an infrastructure error (code 2). The run remains visibly unsuccessful until its result is investigated; pending is not evidence of a coverage gap.
 

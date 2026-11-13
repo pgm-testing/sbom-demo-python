@@ -1,6 +1,7 @@
+import copy
 import unittest
 from unittest.mock import patch
-from check import assert_sbom, atlas_result
+from check import assert_sbom, atlas_result, semantic_hash
 
 
 class CoverageTests(unittest.TestCase):
@@ -78,6 +79,19 @@ class CoverageTests(unittest.TestCase):
             {"spdxElementId": "root", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "parent"},
             {"spdxElementId": "parent", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "dep"}]
         self.assertTrue(assert_sbom(self.doc, self.expected)["pass"])
+
+
+    def test_semantic_hash_ignores_export_metadata_and_order(self):
+        other = copy.deepcopy(self.doc)
+        other["creationInfo"] = {"created": "2099-01-01T00:00:00Z"}
+        other["documentNamespace"] = "different-export"
+        other["packages"].reverse()
+        self.assertEqual(semantic_hash(self.doc), semantic_hash(other))
+
+    def test_semantic_hash_preserves_relationship_changes(self):
+        other = copy.deepcopy(self.doc)
+        other["relationships"] = []
+        self.assertNotEqual(semantic_hash(self.doc), semantic_hash(other))
 
 
 if __name__ == "__main__":

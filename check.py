@@ -1,5 +1,6 @@
 """Read-only coverage checks. Exit: 0 pass, 1 coverage failure, 2 error, 3 pending."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -88,15 +89,27 @@ def get(path):
         return json.load(response)
 
 
+def semantic_hash(raw):
+    # Match Atlas's documented canonical fields; ignore export timestamps/namespace.
+    doc = document(raw)
+    canonical = {"name": doc.get("name"),
+        "packages": sorted(doc["packages"], key=lambda p: p["SPDXID"]),
+        "relationships": sorted(doc.get("relationships", []),
+            key=lambda r: (r["spdxElementId"], r["relatedSpdxElement"], r["relationshipType"]))}
+    return hashlib.sha256(json.dumps(canonical, sort_keys=True, ensure_ascii=False,
+        separators=(",", ":")).encode()).hexdigest()
+
+
 def find_submission(raw, expected):
-    # Match exact parsed artifact content, not merely the newest submission.
+    # Match Atlas semantic content hash, including dependencies and relationships.
+    expected_hash = semantic_hash(raw)
     query = urllib.parse.urlencode({"repository": expected["repository"], "limit": 50})
     listing = get("/ingest/sbom?" + query)
     for item in sorted(listing["items"], key=lambda x: x["id"], reverse=True):
-        detail = get("/ingest/sbom/" + str(item["id"]))
-        artifact = detail.get("raw_artifact")
-        if artifact and document(json.loads(artifact)) == document(raw):
-            return detail
+        if item.get("sbom_content_hash") == expected_hash:
+            detail = get("/ingest/sbom/" + str(item["id"]))
+            if detail["repository_claim"].lower() == expected["repository"].lower():
+                return detail
     return None
 
 
