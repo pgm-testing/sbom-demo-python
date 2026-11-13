@@ -35,7 +35,7 @@ The workflow records the exported SBOM, checks all five dependencies, locates th
 
 The current Action does not expose a submission ID. The correlation check searches up to 50 recent submissions for this repository and matches the semantic hash of the document name, sorted packages and sorted relationships. It ignores volatile export metadata, as Atlas does, so deduplicated submissions can still be identified. An unmatched hash is not treated as success.
 
-Atlas processing can take hours. The baseline checks once after locating the submission. A `pending` result exits with code 3 and is distinct from missing dependency coverage (code 1) or an infrastructure error (code 2). The run remains visibly unsuccessful until its result is investigated; pending is not evidence of a coverage gap.
+Atlas processing can take hours. The baseline polls for up to five minutes; if the worker is still pending, it records `pending-timeout` and `verification_complete: false` without failing solely for the delay. Missing dependency coverage still exits with code 1 and API/processing errors with code 2. Pending is not a verified pass.
 
 Once processing completes, dispatch **Verify processed Atlas submission** with the recorded submission ID, from the same fixture commit used by the baseline. This workflow only reads the API and does not resubmit anything. It verifies submission ownership and that the demo has no project association.
 
@@ -56,3 +56,13 @@ PyPI tansu 1.0.1 points to tupui/soroban-versioning. That repository explicitly 
 ## Dependency structure check
 
 The baseline also checks that requests depends on urllib3, without treating urllib3 as a direct dependency of this fixture. The previous export flattened all dependencies onto the root. Package-presence results and relationship-structure results are reported separately; a structure failure does not mean the packages were omitted. This captures the limitation without changing the Action or adding a precursor.
+
+## Waiting for Atlas processing
+
+The checker now polls the submission status every 15 seconds for up to five minutes before checking dependency relationships. A processed submission is checked immediately; a processing error or missing relationship still fails.
+
+If the budget expires while the submission is pending, the result is `pending-timeout` with `verification_complete: false`. This keeps the workflow from failing solely because a worker has not run, but it is **not** a verified coverage pass. Run `verify-atlas.yml` with the recorded submission ID later. Its result and the baseline together form the evidence.
+
+Override the polling budget with `--processing-wait-seconds` and `--poll-interval`. Submission-record lookup has its own 90-second budget. API errors remain errors rather than being reported as pending.
+
+Repository settings should stay at their defaults unless a baseline demonstrates a necessary change. Gradle needs automatic dependency submission, enabled by Alex. Do not enable it in the other demos just to match Gradle. Alex owns backend dependency-link corrections; these demos provide evidence and verification.
