@@ -9,7 +9,7 @@
       "repo": "pkg:github/StellarCN/py-stellar-base"
     },
     {
-      "name": "Java Stellar SDK Python bindings",
+      "name": "Stellar contract bindings",
       "purl": "pkg:pypi/stellar-contract-bindings",
       "version": "0.6.0b0",
       "repo": "pkg:github/lightsail-network/stellar-contract-bindings"
