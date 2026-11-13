@@ -9,6 +9,7 @@ This repository tests whether real Python dependencies reach PG Atlas through th
 | Python Stellar SDK | stellar-sdk | 17.0.1 |
 | Java Stellar SDK (Python bindings) | stellar-contract-bindings | 0.6.0b0 |
 | Stellar Hardware Wallet Support | strledger | 0.11.0 |
+| Tansu | tansu | 1.0.1 |
 | Well-known control | requests | 2.34.2 |
 
 Source mappings and expected Atlas repository IDs are in `expected.json`. Dependency resolution and an offline smoke check run before the unchanged Action. There is intentionally no precursor dependency-submission action in this baseline.
@@ -30,7 +31,7 @@ An SBOM check requires the exact package versions and a dependency path from the
 
 Push to main or manually run **Python SBOM baseline**. Enable GitHub's dependency graph for this repository first. The workflow uses read access and OIDC to submit to https://api.pgatlas.xyz, with the tested Action pinned in the workflow and expected.json.
 
-The workflow records the exported SBOM, checks all four dependencies, locates the submission by matching its stored artifact to the exported document, and checks processed Atlas repository relationships for the three Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
+The workflow records the exported SBOM, checks all five dependencies, locates the submission by matching its stored artifact to the exported document, and checks processed Atlas repository relationships for the four Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
 
 The current Action does not expose a submission ID. The correlation check searches up to 50 recent submissions for this repository and requires matching parsed artifact content; an unmatched or missing artifact is not treated as success.
 
@@ -47,3 +48,11 @@ Report actual baseline results, including missing dependencies and delays, befor
 ## Repository rename
 
 This demo was renamed from `pgm-testing/d1-python` to `pgm-testing/sbom-demo-python`. Submission 2399 and the initial baseline belong to the old repository identity. Preserve that historical evidence; use a new baseline submission for the renamed repository. The verifier intentionally rejects submissions owned by a different repository name.
+
+## Tansu source mapping
+
+PyPI tansu 1.0.1 points to tupui/soroban-versioning. That repository explicitly announces its move to Consulting-Manao/tansu and shares historical release commits with it. The expected Atlas relationship therefore targets the current repository. This is an assertion to test, not a claim that Atlas has already resolved the mapping. The similarly named npm package and Cargo crate are unrelated and excluded.
+
+## Dependency structure check
+
+The baseline also checks that requests depends on urllib3, without treating urllib3 as a direct dependency of this fixture. The previous export flattened all dependencies onto the root. Package-presence results and relationship-structure results are reported separately; a structure failure does not mean the packages were omitted. This captures the limitation without changing the Action or adding a precursor.

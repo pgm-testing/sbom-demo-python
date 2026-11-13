@@ -1,4 +1,3 @@
-import copy
 import unittest
 from unittest.mock import patch
 from check import assert_sbom, atlas_result
@@ -61,6 +60,24 @@ class CoverageTests(unittest.TestCase):
             [{"canonical_id": "pkg:github/StellarCN/py-stellar-base"}]]
         self.assertEqual(atlas_result({"id": 1, "repository_claim": "pgm-testing/sbom-demo-python",
                          "status": "processed"}, self.expected)[1], 0)
+
+
+    def test_flattened_transitive_relationship_fails(self):
+        self.expected["relationship_checks"] = [{"parent_purl": "pkg:pypi/requests",
+            "child_purl": "pkg:pypi/stellar-sdk", "direct_from_root": False}]
+        self.doc["packages"].append({"SPDXID": "parent", "externalRefs": [
+            {"referenceType": "purl", "referenceLocator": "pkg:pypi/requests@2.0"}]})
+        self.assertFalse(assert_sbom(self.doc, self.expected)["pass"])
+
+    def test_preserved_transitive_relationship_passes(self):
+        self.expected["relationship_checks"] = [{"parent_purl": "pkg:pypi/requests",
+            "child_purl": "pkg:pypi/stellar-sdk", "direct_from_root": False}]
+        self.doc["packages"].append({"SPDXID": "parent", "externalRefs": [
+            {"referenceType": "purl", "referenceLocator": "pkg:pypi/requests@2.0"}]})
+        self.doc["relationships"] = [
+            {"spdxElementId": "root", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "parent"},
+            {"spdxElementId": "parent", "relationshipType": "DEPENDS_ON", "relatedSpdxElement": "dep"}]
+        self.assertTrue(assert_sbom(self.doc, self.expected)["pass"])
 
 
 if __name__ == "__main__":

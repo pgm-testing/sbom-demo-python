@@ -52,7 +52,7 @@ def assert_sbom(raw, expected):
                 if ref.get("referenceType", "").lower() != "purl":
                     continue
                 identity, purl_version = package_identity(ref.get("referenceLocator", ""))
-                if identity == probe["purl"]:
+                if identity.lower() == urllib.parse.unquote(probe["purl"]).lower():
                     matches.append({
                         "id": pkg.get("SPDXID"),
                         "version": purl_version or pkg.get("versionInfo"),
@@ -63,12 +63,27 @@ def assert_sbom(raw, expected):
             **probe, "observed": matches, "reachable_from_root": linked,
             "pass": bool(correct) and linked,
         })
-    return {"stage": "sbom", "pass": bool(roots) and all(r["pass"] for r in results),
-            "root_ids": sorted(roots), "probes": results}
+    by_purl = {}
+    for pkg in packages:
+        for ref in pkg.get("externalRefs", []):
+            if ref.get("referenceType", "").lower() == "purl":
+                identity, _ = package_identity(ref.get("referenceLocator", ""))
+                by_purl.setdefault(identity.lower(), set()).add(pkg["SPDXID"])
+    structure = []
+    for check in expected.get("relationship_checks", []):
+        parents = by_purl.get(check["parent_purl"].lower(), set())
+        children = by_purl.get(check["child_purl"].lower(), set())
+        parent_edge = any(child in graph.get(parent, set()) for parent in parents for child in children)
+        root_edge = any(child in graph.get(root, set()) for root in roots for child in children)
+        structure.append({**check, "parent_edge_present": parent_edge,
+                          "root_edge_present": root_edge,
+                          "pass": bool(children) and parent_edge and root_edge == check["direct_from_root"]})
+    return {"stage": "sbom", "pass": bool(roots) and all(r["pass"] for r in results) and all(r["pass"] for r in structure),
+            "root_ids": sorted(roots), "probes": results, "relationship_checks": structure}
 
 
 def get(path):
-    request = urllib.request.Request(BASE + path, headers={"User-Agent": "PG-Atlas-D1-python-demo"})
+    request = urllib.request.Request(BASE + path, headers={"User-Agent": "PG-Atlas-D1-ecosystem-demo"})
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.load(response)
 
