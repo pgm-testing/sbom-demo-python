@@ -30,7 +30,7 @@ An SBOM check requires the exact package versions and a dependency path from the
 
 Push to main or manually run **Python SBOM baseline**. Enable GitHub's dependency graph for this repository first. The workflow uses read access and OIDC to submit to https://api.pgatlas.xyz, with the tested Action pinned in the workflow and expected.json.
 
-The workflow records the exported SBOM, checks all five dependencies, locates the submission by matching Atlas’s semantic content hash, and checks processed Atlas repository relationships for the four Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
+The workflow records the exported SBOM, checks all four dependencies, locates the submission by matching Atlas’s semantic content hash, and checks processed Atlas repository relationships for the three Stellar probes. requests is asserted in the SBOM; no Atlas project association is required for the control.
 
 The current Action does not expose a submission ID. The correlation check searches up to 50 recent submissions for this repository and matches the semantic hash of the document name, sorted packages and sorted relationships. It ignores volatile export metadata, as Atlas does, so deduplicated submissions can still be identified. An unmatched hash is not treated as success.
 
@@ -43,10 +43,6 @@ Artifacts are retained for 30 days. Download important baseline evidence into th
 ## Review
 
 Report actual baseline results, including missing dependencies and delays, before changing workflows to address coverage. Gradle/Swift fixes and other Phase 2 work are tracked in [the D1 plan](https://github.com/SCF-Public-Goods-Maintenance/pg-atlas-sbom-action/issues/10).
-
-## Repository rename
-
-This demo was renamed from `pgm-testing/d1-python` to `pgm-testing/sbom-demo-python`. Submission 2399 and the initial baseline belong to the old repository identity. Preserve that historical evidence; use a new baseline submission for the renamed repository. The verifier intentionally rejects submissions owned by a different repository name.
 
 ## Dependency structure check
 
@@ -61,7 +57,3 @@ If the budget expires while the submission is pending, the result is `pending-ti
 Override the polling budget with `--processing-wait-seconds` and `--poll-interval`. Submission-record lookup has its own 90-second budget. API errors remain errors rather than being reported as pending.
 
 Repository settings should stay at their defaults unless a baseline demonstrates a necessary change. Gradle needs automatic dependency submission, enabled by Alex. Do not enable it in the other demos just to match Gradle. Alex owns backend dependency-link corrections; these demos provide evidence and verification.
-
-## Probe scope
-
-The outdated PyPI Tansu package was removed from the active fixture following maintainer review. Historical baseline evidence is retained; it is not an outstanding backend fix or an accepted current probe.
