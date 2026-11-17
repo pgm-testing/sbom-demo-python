@@ -9,7 +9,6 @@ This repository tests whether real Python dependencies reach PG Atlas through th
 | Python Stellar SDK | stellar-sdk | 17.0.1 |
 | Java Stellar SDK (Python bindings) | stellar-contract-bindings | 0.6.0b0 |
 | Stellar Hardware Wallet Support | strledger | 0.11.0 |
-| Tansu | tansu | 1.0.1 |
 | Well-known control | requests | 2.34.2 |
 
 Source mappings and expected Atlas repository IDs are in `expected.json`. Dependency resolution and an offline smoke check run before the unchanged Action. There is intentionally no precursor dependency-submission action in this baseline.
@@ -49,10 +48,6 @@ Report actual baseline results, including missing dependencies and delays, befor
 
 This demo was renamed from `pgm-testing/d1-python` to `pgm-testing/sbom-demo-python`. Submission 2399 and the initial baseline belong to the old repository identity. Preserve that historical evidence; use a new baseline submission for the renamed repository. The verifier intentionally rejects submissions owned by a different repository name.
 
-## Tansu source mapping
-
-PyPI tansu 1.0.1 points to tupui/soroban-versioning. That repository explicitly announces its move to Consulting-Manao/tansu and shares historical release commits with it. The expected Atlas relationship therefore targets the current repository. This is an assertion to test, not a claim that Atlas has already resolved the mapping. The similarly named npm package and Cargo crate are unrelated and excluded.
-
 ## Dependency structure check
 
 The baseline also checks that requests depends on urllib3, without treating urllib3 as a direct dependency of this fixture. The previous export flattened all dependencies onto the root. Package-presence results and relationship-structure results are reported separately; a structure failure does not mean the packages were omitted. This captures the limitation without changing the Action or adding a precursor.
@@ -66,3 +61,7 @@ If the budget expires while the submission is pending, the result is `pending-ti
 Override the polling budget with `--processing-wait-seconds` and `--poll-interval`. Submission-record lookup has its own 90-second budget. API errors remain errors rather than being reported as pending.
 
 Repository settings should stay at their defaults unless a baseline demonstrates a necessary change. Gradle needs automatic dependency submission, enabled by Alex. Do not enable it in the other demos just to match Gradle. Alex owns backend dependency-link corrections; these demos provide evidence and verification.
+
+## Probe scope
+
+The outdated PyPI Tansu package was removed from the active fixture following maintainer review. Historical baseline evidence is retained; it is not an outstanding backend fix or an accepted current probe.

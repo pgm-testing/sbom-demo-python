@@ -21,12 +21,6 @@
       "repo": "pkg:github/lightsail-network/strledger"
     },
     {
-      "name": "Tansu",
-      "purl": "pkg:pypi/tansu",
-      "version": "1.0.1",
-      "repo": "pkg:github/Consulting-Manao/tansu"
-    },
-    {
       "name": "requests control",
       "purl": "pkg:pypi/requests",
       "version": "2.34.2",
